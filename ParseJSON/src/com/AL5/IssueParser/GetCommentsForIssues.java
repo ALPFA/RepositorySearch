@@ -18,7 +18,7 @@ public class GetCommentsForIssues {
 			Object obj = parser.parse(new FileReader("C:\\Users\\ThejaSwarup\\Box Sync\\Spring 2015\\JavaProjects\\IssueURLs.json"));
 			JSONObject jsonObject = (JSONObject) obj;
 			JSONArray issueURLs = (JSONArray) jsonObject.get("IssueURL");
-			for(int project = 301; project <= 400; project++){
+			for(int project = 1; project <= issueURLs.size(); project++){
 				JSONObject projObj = new JSONObject();
 				projObj.put("File", "issueBody");
 				projObj.put("Description", "This file contains body of all the issues for project");
