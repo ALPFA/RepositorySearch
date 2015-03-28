@@ -1,5 +1,7 @@
 package com.AL5.IssueParser;
 
+import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -32,7 +34,7 @@ public class GetIssueDetailsForProjects {
 			//Ex: "IssueURL":["https://api.github.com/repos/ReactiveX/RxJava/issues"]
 			JSONArray issueURLs = (JSONArray) jsonObject.get("IssueURL");
 			//for each of the project create one JSON Object for each issue
-			for(int project = 1; project < 2; project++){
+			for(int project = 2; project < 3; project++){
 				String url = issueURLs.get(project-1).toString();
 				String projectName = getProjectName(url);
 				String projectId = projectMap.get(projectName);
@@ -40,7 +42,6 @@ public class GetIssueDetailsForProjects {
 				issuesOfProjectMap = getIssuesTitle(url);
 				//write content of each bug as a seperate JSON
 				for (String key : issuesOfProjectMap.keySet()) {
-					//String key = "2843";
 					JSONObject issueObj = new JSONObject();
 					IssueObject issue = issuesOfProjectMap.get(key);
 					issueObj.put("Project ID", projectId);
@@ -62,7 +63,7 @@ public class GetIssueDetailsForProjects {
 							commentsJson = IOUtils.toString(new URL(commentsURL));
 							JSONArray commentsJsonArr = (JSONArray) JSONValue.parseWithException(commentsJson);
 							int count = 0;
-							 //get the body of issue - description of issue
+							//get the body of issue - description of issue
 							while(hasNextpage){
 								if(commentsJsonArr.size()!=30){
 									hasNextpage = false;
@@ -80,17 +81,13 @@ public class GetIssueDetailsForProjects {
 							}
 						}
 						catch(Exception e){
-							//Implement a log mechanism to write to a log file
+							//TODO: Implement a log mechanism to write to a log file
 							System.out.println("URL Issue " + e);
 						}
 						issueObj.put("Comments_content", commentsList);
 					}
-					//Logic Needed: If directory doesn't exist create one
-					String subjectLocation = properties.getProperty("PATH_FOR_SUBJECTS")+"//"+projectName+"//"+key+".json";
-					FileWriter file = new FileWriter(subjectLocation);
-					file.write(issueObj.toJSONString());
-					file.flush();
-					file.close();
+					//write the content to JSON File
+					writeToFile(properties,projectName,key,issueObj);
 				}
 				
 			}//for
@@ -102,10 +99,29 @@ public class GetIssueDetailsForProjects {
 		System.out.println("Executed!");
 	}
 
+	private static void writeToFile(Properties properties, String projectName, String key, JSONObject issueObj) {
+		try{
+			String directory = properties.getProperty("PATH_FOR_SUBJECTS")+"//"+projectName;
+			String absPath = properties.getProperty("PATH_FOR_SUBJECTS")+"//"+projectName+"//"+key+".json";
+			File file = new File(directory);
+			if (!file.exists()) {
+				file.mkdir();
+			}
+			File jsonFile = new File(absPath);
+			FileWriter fw = new FileWriter(jsonFile.getAbsoluteFile());
+			BufferedWriter bw = new BufferedWriter(fw);
+			bw.write(issueObj.toJSONString());
+			bw.close();
+		}
+		catch(Exception e){
+			System.out.println("Exception in writeToFile "+ e);
+			System.exit(0);
+		}
+		
+	}
+
 	@SuppressWarnings("unchecked")
 	private static HashMap<String,IssueObject> getIssuesTitle(String url) {
-		//JSONObject issueObject = new JSONObject();
-		//issueObject.put("Description", "This file contains title of the issues for project");
 		String issuesJson = null;
 		boolean hasNextpage = true;
 		HashMap<String,IssueObject> issues = new HashMap<String, IssueObject>();
@@ -151,13 +167,13 @@ public class GetIssueDetailsForProjects {
 			}
 		}
 		catch(Exception e){
-			//Implement a log mechanism to write to a log file
+			//TODO:Implement a log mechanism to write to a log file
 			System.out.println("URL Issue " + e);
 		}
 		return issues;
 	}
 
-	private static String getProjectName(String url) {
+	public static String getProjectName(String url) {
 		String name = null;
 		String[] parse1 = url.split("/issues?");
 		String[] parse2 = parse1[0].split("/repos/");
