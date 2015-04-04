@@ -8,7 +8,6 @@ import java.io.FileWriter;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Properties;
-
 import org.apache.commons.io.IOUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
