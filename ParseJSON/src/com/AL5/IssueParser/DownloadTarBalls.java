@@ -11,17 +11,22 @@ import java.util.Properties;
 
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-
+/**
+ * This program downloads source code for all versions of selected subjects.
+ * The selected subjects and version details are obtained from GenerateReleaseDetailsForProjects.java
+ * @author theja
+ *
+ */
 public class DownloadTarBalls {
 
 	public static void main(String[] args) {
 		Properties properties = new Properties();
 		InputStream input = null;
 		try {
-			input = new FileInputStream("lib//ResourceHelper.properties");
+			input = new FileInputStream("lib/linux_directories.properties");
 			properties.load(input);
 			//TODO: Change path to releases
-			final File folder = new File(properties.getProperty("PATH_FOR_TEST"));
+			final File folder = new File(properties.getProperty("PATH_FOR_RELEASES"));
 			listFilesForFolder(folder,properties);
 			System.out.println("Finished");
 		} catch (Exception e) {
@@ -71,7 +76,7 @@ public class DownloadTarBalls {
 			try{
 				URL url = new URL(tarball_URL);
 				//TODO: Change to actual download content directory
-				String path = properties.getProperty("PATH_FOR_TEST_CODE");
+				String path = properties.getProperty("PATH_FOR_SUBJECTS_SOURCE_CODE");
 				String[] tar_split = tarball_URL.split("/");
 				String fileName = tar_split[tar_split.length-1]+".tar";
 				URLConnection connection = url.openConnection();

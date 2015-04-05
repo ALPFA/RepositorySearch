@@ -6,7 +6,11 @@ import java.io.FileWriter;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-
+/**
+ * Not required. TODO: Delete this file
+ * @author theja
+ *
+ */
 public class GetIssuesURLsForProjects {
 
 	public static void main(String[] args) {

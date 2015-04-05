@@ -10,7 +10,11 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.json.simple.parser.JSONParser;
-
+/**
+ * Not required. Functionality covered under GetIssueDetailsForProjects.java
+ * @author theja
+ *
+ */
 public class GetCommentsForIssues {
 
 	public static void main(String[] args) {

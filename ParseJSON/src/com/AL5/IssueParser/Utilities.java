@@ -1,20 +1,10 @@
 package com.AL5.IssueParser;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.FileReader;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.URL;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Properties;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -53,7 +43,7 @@ public class Utilities {
 	   * @param targetDir
 	   * @return the file to the url
 	   * @throws IOException
-	   */
+	   *//*
 	 public static void unpackArchive(URL url, File targetDir) throws IOException {
 	      if (!targetDir.exists()) {
 	          targetDir.mkdirs();
@@ -66,14 +56,14 @@ public class Utilities {
 	      out.close();
 	      //return unpackArchive(zip, targetDir);
 	  }
-	  /**
+	  *//**
 	   * Unpack a zip file
 	   * 
 	   * @param theFile
 	   * @param targetDir
 	   * @return the file
 	   * @throws IOException
-	   */
+	   *//*
 	  public static File unpackArchive(File theFile, File targetDir) throws IOException {
 	      if (!theFile.exists()) {
 	          throw new IOException(theFile.getAbsolutePath() + " does not exist");
@@ -113,5 +103,5 @@ public class Utilities {
 
 	  public static boolean buildDirectory(File file) {
 	      return file.exists() || file.mkdirs();
-	  }
+	  }*/
 }
