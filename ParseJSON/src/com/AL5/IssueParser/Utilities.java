@@ -1,5 +1,6 @@
 package com.AL5.IssueParser;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.InputStream;
@@ -19,7 +20,7 @@ public class Utilities {
 		InputStream input = null;
 		Object obj = null;
 		try{
-			input = new FileInputStream("lib/linux_directories.properties");
+			input = new FileInputStream("lib"+File.separator+"linux_directories.properties");
 			properties.load(input);
 			obj = jsonParser.parse(new FileReader(properties.getProperty("PATH_FOR_PROJECT_NAME_ID_OBJECT")));
 			JSONObject jsonObject = (JSONObject) obj;

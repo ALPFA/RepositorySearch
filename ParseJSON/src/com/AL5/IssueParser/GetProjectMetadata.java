@@ -27,8 +27,8 @@ public class GetProjectMetadata {
 		InputStream dir_props = null;
 		InputStream auth_props = null;
 		try{
-			dir_props = new FileInputStream("lib//linux_directories.properties");
-			auth_props = new FileInputStream("lib//authentication.properties");
+			dir_props = new FileInputStream("lib"+File.separator+"linux_directories.properties");
+			auth_props = new FileInputStream("lib"+File.separator+"authentication.properties");
 			properties_dir.load(dir_props);
 			properties_auth.load(auth_props);
 			final File dir = new File(properties_dir.getProperty("PATH_FOR_SEARCH_RESULTS"));
@@ -122,7 +122,7 @@ public class GetProjectMetadata {
 	public static void writeToFile(String parentDirectory,String fileName, JSONObject issueObj) {
 		
 		try{
-			String absPath = parentDirectory+"/"+fileName+".json";
+			String absPath = parentDirectory+File.separator+fileName+".json";
 			File file = new File(parentDirectory);
 			if (!file.exists()) {
 				file.mkdirs();
@@ -170,7 +170,7 @@ public class GetProjectMetadata {
 						writeToFile(properties_dir.getProperty("PATH_FOR_RELEASES")+projectName, tagName, releaseObj);
 					}
 					if(hasNextpage){
-						releasesJsonArr = GetCommentsForIssues.checkIfnewPageHasData(++count,releasesURL.toString());
+						releasesJsonArr = GetIssueDetailsForProjects.checkIfnewPageHasData(++count,releasesURL.toString());
 						if(releasesJsonArr.size() > 0){
 							hasNextpage = true;
 						}

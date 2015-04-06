@@ -1,5 +1,6 @@
 package com.AL5.IssueParser;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.InputStream;
@@ -31,8 +32,8 @@ public class GetIssueDetailsForProjects {
 		HashMap<String,String> projectMap = Utilities.getProjectMap();
 		try{
 			//Read all the properties from property file
-			dir_props = new FileInputStream("lib//linux_directories.properties");
-			auth_props = new FileInputStream("lib//authentication.properties");
+			dir_props = new FileInputStream("lib"+File.separator+"linux_directories.properties");
+			auth_props = new FileInputStream("lib"+File.separator+"authentication.properties");
 			properties_dir.load(dir_props);
 			properties_auth.load(auth_props);
 			obj = jsonParser.parse(new FileReader(properties_dir.getProperty("PATH_FOR_ISSUES_URL")));
@@ -120,7 +121,7 @@ public class GetIssueDetailsForProjects {
 		InputStream auth_props = null;
 		String rateLimitJson = null;
 		try{
-			auth_props = new FileInputStream("lib//authentication.properties");
+			auth_props = new FileInputStream("lib"+File.separator+"authentication.properties");
 			properties_auth.load(auth_props);
 			String url = "https://api.github.com/rate_limit?client_id="+properties_auth.getProperty("CLIENT_ID")+"&client_secret="+properties_auth.getProperty("CLIENT_SECRET");
 			rateLimitJson = IOUtils.toString(new URL(url));

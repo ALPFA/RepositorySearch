@@ -21,7 +21,7 @@ public class GenerateProjectBasicDetails {
 		Properties properties_dir = new Properties();
 		try{
 			JSONObject projObj = new JSONObject();
-			dir_props = new FileInputStream("lib/linux_directories.properties");
+			dir_props = new FileInputStream("lib"+File.separator+"linux_directories.properties");
 			properties_dir.load(dir_props);
 			projObj.put("File", "projects");
 			projObj.put("Description", "Contains list of java project ids and their names on github");
