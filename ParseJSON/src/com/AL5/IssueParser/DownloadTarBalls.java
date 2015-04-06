@@ -25,8 +25,8 @@ public class DownloadTarBalls {
 		InputStream dir_props = null;
 		InputStream auth_props = null;
 		try {
-			dir_props = new FileInputStream("lib//linux_directories.properties");
-			auth_props = new FileInputStream("lib//authentication.properties");
+			dir_props = new FileInputStream("lib"+File.separator+"linux_directories.properties");
+			auth_props = new FileInputStream("lib"+File.separator+"authentication.properties");
 			properties_dir.load(dir_props);
 			properties_auth.load(auth_props);
 			//TODO: Change path to releases
@@ -84,29 +84,34 @@ public class DownloadTarBalls {
 				String[] tar_split = tarball_URL.split("/");
 				String fileName = tar_split[tar_split.length-1]+".tar";
 				String projectName = tar_split[tar_split.length-3];
-				URLConnection connection = url.openConnection();
-				InputStream in = connection.getInputStream();
 				File file = new File(path+projectName+File.separator);
 				if (!file.exists()) {
 					file.mkdirs();
 				}
-				FileOutputStream fos = new FileOutputStream(new File(file.getAbsoluteFile()+File.separator+fileName));
-				byte[] buf = new byte[512];
-				while (true) {
-				    int len = in.read(buf);
-				    if (len == -1) {
-				        break;
-				    }
-				    fos.write(buf, 0, len);
+				File tar_file = new File(file.getAbsoluteFile()+File.separator+fileName);
+				if(!tar_file.exists()){
+					URLConnection connection = url.openConnection();
+					InputStream in = connection.getInputStream();
+					FileOutputStream fos = new FileOutputStream(tar_file);
+					byte[] buf = new byte[512];
+					while (true) {
+					    int len = in.read(buf);
+					    if (len == -1) {
+					        break;
+					    }
+					    fos.write(buf, 0, len);
+					}
+					in.close();
+					fos.flush();
+					fos.close();
+					System.out.println("Source code downloaded for "+projectName+File.separator+fileName);
 				}
-				in.close();
-				fos.flush();
-				fos.close();
-				System.out.println("Source code downloaded for "+fileName);
+				else{
+					System.out.println("Source code already downloaded for "+projectName+File.separator+fileName);
+				}
 			}
 			catch(Exception e){
 				System.out.println("Exception in downloadSourceCode for "+tarball_URL+" "+ e);
-				System.exit(1);
 			}
 			
 		}
