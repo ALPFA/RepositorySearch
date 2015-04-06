@@ -127,7 +127,7 @@ public class GetIssueDetailsForProjects {
 			rateLimitJson = IOUtils.toString(new URL(url));
 			JSONObject rateLimit = (JSONObject) JSONValue.parseWithException(rateLimitJson);
 			JSONObject rate = (JSONObject)rateLimit.get("rate");
-			currentlimit = (long) rate.get("remaining");
+			currentlimit = Long.parseLong(rate.get("remaining").toString());
 		}
 		catch (Exception e){
 			System.out.println("Exception in getCurrentAPIRequests "+e);
