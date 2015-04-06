@@ -3,6 +3,7 @@ package com.AL5.IssueParser;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.InputStream;
+import java.io.Reader;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Properties;
@@ -12,21 +13,29 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.json.simple.parser.JSONParser;
-
+/**
+ * This program gets closed issue objects for each projects and stores them as JSON
+ * @author theja
+ *
+ */
 public class GetIssueDetailsForProjects {
-
+	public static long apiRequests = getCurrentAPIRequests();
 	@SuppressWarnings("unchecked")
 	public static void main(String[] args) {
-		Properties properties = new Properties();
 		JSONParser jsonParser = new JSONParser();
-		InputStream input = null;
+		Properties properties_dir = new Properties();
+		Properties properties_auth = new Properties();
+		InputStream dir_props = null;
+		InputStream auth_props = null;
 		Object obj = null;
 		HashMap<String,String> projectMap = Utilities.getProjectMap();
 		try{
 			//Read all the properties from property file
-			input = new FileInputStream("lib/linux_directories.properties");
-			properties.load(input);
-			obj = jsonParser.parse(new FileReader(properties.getProperty("PATH_FOR_ISSUES_URL")));
+			dir_props = new FileInputStream("lib//linux_directories.properties");
+			auth_props = new FileInputStream("lib//authentication.properties");
+			properties_dir.load(dir_props);
+			properties_auth.load(auth_props);
+			obj = jsonParser.parse(new FileReader(properties_dir.getProperty("PATH_FOR_ISSUES_URL")));
 			JSONObject jsonObject = (JSONObject) obj;
 			// The required content is stored in a property called IssueURL
 			//Ex: "IssueURL":["https://api.github.com/repos/ReactiveX/RxJava/issues"]
@@ -37,7 +46,8 @@ public class GetIssueDetailsForProjects {
 				String projectName = getProjectName(url,"/issues?");
 				String projectId = projectMap.get(projectName);
 				HashMap<String,IssueObject> issuesOfProjectMap = new HashMap<String, IssueObject>();
-				issuesOfProjectMap = getIssues(url);
+				//Get only closed issues
+				issuesOfProjectMap = getIssues(url+"&state=closed");
 				//write content of each bug as a seperate JSON
 				for (String key : issuesOfProjectMap.keySet()) {
 					JSONObject issueObj = new JSONObject();
@@ -53,12 +63,14 @@ public class GetIssueDetailsForProjects {
 					//Get all comments for this bug
 					if(Integer.parseInt(issue.getComments_count()) > 0){
 						JSONArray commentsList = new JSONArray();
-						String commentsURL = issue.getComments_URL()+"?client_id="+properties.getProperty("CLIENT_ID")+"&client_secret="+properties.getProperty("CLIENT_SECRET");
+						String commentsURL = issue.getComments_URL()+"?client_id="+properties_auth.getProperty("CLIENT_ID")+"&client_secret="+properties_auth.getProperty("CLIENT_SECRET");
 						String commentsJson = null;
 						boolean hasNextpage = true;
 						try{
 							//Some times the URL may be damaged or service is not available
 							commentsJson = IOUtils.toString(new URL(commentsURL));
+							apiRequests--;
+							checkAPIRateLimit();
 							JSONArray commentsJsonArr = (JSONArray) JSONValue.parseWithException(commentsJson);
 							int count = 0;
 							//get the body of issue - description of issue
@@ -71,7 +83,7 @@ public class GetIssueDetailsForProjects {
 									commentsList.add(commentObj.get("body"));
 								}
 								if(hasNextpage){
-									commentsJsonArr = GetCommentsForIssues.checkIfnewPageHasData(++count,commentsURL);
+									commentsJsonArr = checkIfnewPageHasData(++count,commentsURL);
 									if(commentsJsonArr.size() > 0){
 										hasNextpage = true;
 									}
@@ -86,7 +98,7 @@ public class GetIssueDetailsForProjects {
 						issueObj.put("Comments_content", commentsList);
 					}
 					//write the content to JSON File
-					GetProjectMetadata.writeToFile(properties.getProperty("PATH_FOR_ISSUES_METADATA")+projectName,key,issueObj);
+					GetProjectMetadata.writeToFile(properties_dir.getProperty("PATH_FOR_ISSUES_METADATA")+projectName,key,issueObj);
 				}
 				
 			}//for
@@ -97,6 +109,49 @@ public class GetIssueDetailsForProjects {
 		}
 		System.out.println("Executed!");
 	}
+	/**
+	 * Get the current available rate limit and return the value
+	 * @return
+	 */
+	private static long getCurrentAPIRequests() {
+		//Hit API rate limit end point to determine remaining capacity
+		long currentlimit = 0;
+		Properties properties_auth = new Properties();
+		InputStream auth_props = null;
+		String rateLimitJson = null;
+		try{
+			auth_props = new FileInputStream("lib//authentication.properties");
+			properties_auth.load(auth_props);
+			String url = "https://api.github.com/rate_limit?client_id="+properties_auth.getProperty("CLIENT_ID")+"&client_secret="+properties_auth.getProperty("CLIENT_SECRET");
+			rateLimitJson = IOUtils.toString(new URL(url));
+			JSONObject rateLimit = (JSONObject) JSONValue.parseWithException(rateLimitJson);
+			JSONObject rate = (JSONObject)rateLimit.get("rate");
+			currentlimit = (long) rate.get("remaining");
+		}
+		catch (Exception e){
+			System.out.println("Exception in getCurrentAPIRequests "+e);
+			System.exit(1);
+		}
+		return currentlimit;
+	}
+	/**
+	 * Pause the execution for an hour and then continue execution
+	 */
+	private static void checkAPIRateLimit() {
+		if(apiRequests <= 200){
+			try {
+				apiRequests = getCurrentAPIRequests();
+				if(apiRequests <= 200){
+					Thread.sleep(3600001);
+					apiRequests = getCurrentAPIRequests();
+				}
+			} catch (InterruptedException e) {
+			    Thread.currentThread().interrupt();
+			    return;
+			}
+		}
+		
+	}
 
 	private static HashMap<String,IssueObject> getIssues(String url) {
 		String issuesJson = null;
@@ -105,8 +160,10 @@ public class GetIssueDetailsForProjects {
 		try{
 			//Some times the URL may be damaged or service is not available
 			issuesJson = IOUtils.toString(new URL(url));
+			apiRequests--;
+			checkAPIRateLimit();
 			JSONArray issuesJsonArr = (JSONArray) JSONValue.parseWithException(issuesJson);
-			int count = 0;
+			int count = 1;
 			 //get the body of issue - description of issue
 			while(hasNextpage){
 				if(issuesJsonArr.size()!=30){
@@ -137,7 +194,7 @@ public class GetIssueDetailsForProjects {
 					}
 					issues.put(issue.get("number").toString(),issueObj);
 				}
-				issuesJsonArr = GetCommentsForIssues.checkIfnewPageHasData(++count,url);
+				issuesJsonArr = checkIfnewPageHasData(++count,url);
 				if(issuesJsonArr.size() > 0){
 					hasNextpage = true;
 				}
@@ -149,15 +206,37 @@ public class GetIssueDetailsForProjects {
 		}
 		return issues;
 	}
-
+	/**
+	 * Return project name from URL
+	 * @param url
+	 * @param param
+	 * @return
+	 */
 	public static String getProjectName(String url,String param) {
 		String name = null;
-		//String[] parse1 = url.split("/issues?");
 		String[] parse1 = url.split(param);
 		String[] parse2 = parse1[0].split("/repos/");
 		String[] parse3 = parse2[1].split("/");
 		name = parse3[1];
 		return name;
 	}
-
+	/**
+	 * function to fetch next page data
+	 * @param count
+	 * @param url
+	 * @return
+	 */
+	public static JSONArray checkIfnewPageHasData(int count, String url) {
+		JSONArray issuesJsonArr = null;
+		try {
+			String issuesJson = IOUtils.toString(new URL(url+"&page="+count));
+			apiRequests--;
+			checkAPIRateLimit();
+			issuesJsonArr = (JSONArray) JSONValue.parseWithException(issuesJson);
+		}
+		catch(Exception e){
+			System.out.println("Exception in checkIfnewPageHasData" + e);
+		}
+		return issuesJsonArr;
+	}
 }

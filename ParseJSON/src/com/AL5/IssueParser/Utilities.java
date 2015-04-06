@@ -19,9 +19,9 @@ public class Utilities {
 		InputStream input = null;
 		Object obj = null;
 		try{
-			input = new FileInputStream("lib//ResourceHelper.properties");
+			input = new FileInputStream("lib/linux_directories.properties");
 			properties.load(input);
-			obj = jsonParser.parse(new FileReader(properties.getProperty("PATH_FOR_NAME_IDS")));
+			obj = jsonParser.parse(new FileReader(properties.getProperty("PATH_FOR_PROJECT_NAME_ID_OBJECT")));
 			JSONObject jsonObject = (JSONObject) obj;
 			JSONArray ids = (JSONArray) jsonObject.get("Ids");
 			JSONArray names = (JSONArray) jsonObject.get("Names");
@@ -38,7 +38,7 @@ public class Utilities {
 	}
 	/**
 	   * Unpack an archive from a URL
-	   * 
+	   * TODO: May need this code in future
 	   * @param url
 	   * @param targetDir
 	   * @return the file to the url
@@ -58,7 +58,7 @@ public class Utilities {
 	  }
 	  *//**
 	   * Unpack a zip file
-	   * 
+	   * TODO: May need this code in future
 	   * @param theFile
 	   * @param targetDir
 	   * @return the file
